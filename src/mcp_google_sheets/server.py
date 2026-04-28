@@ -69,6 +69,19 @@ def _log(*args: Any, **kwargs: Any) -> None:
     print(*args, file=sys.stderr, **kwargs)
 
 
+def _persist_token(creds: Any) -> None:
+    # Tokens grant ongoing access to the configured Google scopes; the file
+    # must not be readable by other local users on shared systems.
+    with open(TOKEN_PATH, 'w') as token:
+        token.write(creds.to_json())
+    try:
+        os.chmod(TOKEN_PATH, 0o600)
+    except OSError:
+        # Filesystems without POSIX permissions (e.g., some Windows mounts)
+        # will reject chmod; the write itself still succeeded.
+        pass
+
+
 def _escape_drive_query_value(value: str) -> str:
     # Drive API string literals are single-quoted. Per the query reference,
     # single quotes and backslashes inside a literal must be escaped, otherwise
@@ -123,9 +136,7 @@ async def spreadsheet_lifespan(server: FastMCP) -> AsyncIterator[SpreadsheetCont
                     _log("Attempting to refresh expired token...")
                     creds.refresh(Request())
                     _log("Token refreshed successfully")
-                    # Save the refreshed token
-                    with open(TOKEN_PATH, 'w') as token:
-                        token.write(creds.to_json())
+                    _persist_token(creds)
                 except Exception as refresh_error:
                     _log(f"Token refresh failed: {refresh_error}")
                     _log("Triggering reauthentication flow...")
@@ -136,10 +147,7 @@ async def spreadsheet_lifespan(server: FastMCP) -> AsyncIterator[SpreadsheetCont
                 try:
                     flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
                     creds = flow.run_local_server(port=0)
-
-                    # Save the credentials for the next run
-                    with open(TOKEN_PATH, 'w') as token:
-                        token.write(creds.to_json())
+                    _persist_token(creds)
                     _log("Successfully authenticated using OAuth flow")
                 except Exception as e:
                     _log(f"Error with OAuth flow: {e}")

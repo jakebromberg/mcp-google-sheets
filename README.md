@@ -390,6 +390,14 @@ The server checks for credentials in this order:
 
 ---
 
+## 🔒 Security Considerations
+
+Read this before exposing the server beyond your local machine.
+
+*   **OAuth token file.** The persisted `token.json` is written `0600` where the OS supports POSIX permissions. Keep `TOKEN_PATH` on a filesystem that respects them; avoid placing it in shared/world-readable locations.
+
+---
+
 ## ⚙️ Running the Server (Detailed)
 
 _Refer to the [ID Reference Guide](#-id-reference-guide) for more information about the IDs used below._
