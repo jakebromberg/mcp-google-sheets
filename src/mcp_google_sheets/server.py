@@ -194,9 +194,13 @@ async def spreadsheet_lifespan(server: FastMCP) -> AsyncIterator[SpreadsheetCont
         pass
 
 
-# Initialize the MCP server with lifespan management
-# Resolve host/port from environment variables with flexible names
-_resolved_host = os.environ.get('HOST') or os.environ.get('FASTMCP_HOST') or "0.0.0.0"
+# Initialize the MCP server with lifespan management.
+# When the server runs the SSE transport it has no built-in authentication, so
+# binding to all interfaces by default would expose the configured Google
+# credentials to anyone who can reach the port. Default to localhost; opt into a
+# wider bind explicitly via HOST or FASTMCP_HOST when fronting with a reverse
+# proxy that adds auth.
+_resolved_host = os.environ.get('HOST') or os.environ.get('FASTMCP_HOST') or "127.0.0.1"
 _resolved_port_str = os.environ.get('PORT') or os.environ.get('FASTMCP_PORT') or "8000"
 try:
     _resolved_port = int(_resolved_port_str)
