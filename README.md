@@ -387,6 +387,7 @@ The server checks for credentials in this order:
 | `CREDENTIALS_PATH`               | OAuth 2.0                   | Path to the OAuth 2.0 Client ID JSON file.                       | `credentials.json` |
 | `TOKEN_PATH`                     | OAuth 2.0                   | Path to store the generated OAuth token.                         | `token.json`       |
 | `CREDENTIALS_CONFIG`             | Service Account / OAuth 2.0 | Base64 encoded JSON string of credentials content.               | -                  |
+| `DRIVE_SCOPE`                    | All                         | `file` (default, least privilege — only files the app creates or that are explicitly shared with it) or `full` (legacy: full read/write to every file in the user's Drive). Use `full` if you need `list_spreadsheets` / `search_spreadsheets` to see arbitrary files in `My Drive`. | `file`             |
 
 ---
 
@@ -394,6 +395,7 @@ The server checks for credentials in this order:
 
 Read this before exposing the server beyond your local machine.
 
+*   **OAuth scope.** By default the server requests `drive.file` (only files the app creates or that are explicitly opened with it) and `spreadsheets`. Setting `DRIVE_SCOPE=full` grants full read/write to **every** file in the authenticated user's Drive — only do that when you genuinely need cross-Drive search or listing, and prefer a service account with explicit folder shares for the same effect.
 *   **OAuth token file.** The persisted `token.json` is written `0600` where the OS supports POSIX permissions. Keep `TOKEN_PATH` on a filesystem that respects them; avoid placing it in shared/world-readable locations.
 
 ---

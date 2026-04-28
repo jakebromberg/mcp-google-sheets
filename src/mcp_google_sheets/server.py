@@ -26,7 +26,18 @@ from googleapiclient.discovery import build
 import google.auth
 
 # Constants
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+# Drive scope is configurable. Default is the least-privilege `drive.file`, which
+# only grants access to files the app creates or that the user explicitly opens
+# with it. Set DRIVE_SCOPE=full to grant access to every file in the user's Drive
+# (the previous default; required if you need list_spreadsheets/search across the
+# whole Drive rather than only files shared with the app's service account).
+_DRIVE_SCOPE_MODE = os.environ.get('DRIVE_SCOPE', 'file').lower()
+_DRIVE_SCOPE_URL = (
+    'https://www.googleapis.com/auth/drive'
+    if _DRIVE_SCOPE_MODE == 'full'
+    else 'https://www.googleapis.com/auth/drive.file'
+)
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets', _DRIVE_SCOPE_URL]
 CREDENTIALS_CONFIG = os.environ.get('CREDENTIALS_CONFIG')
 TOKEN_PATH = os.environ.get('TOKEN_PATH', 'token.json')
 CREDENTIALS_PATH = os.environ.get('CREDENTIALS_PATH', 'credentials.json')
